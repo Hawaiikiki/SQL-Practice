@@ -60,3 +60,8 @@ ORDER BY Name
 SELECT DISTINCT ISNULL(ProductSubcategoryID,'') AS ProductSubcategoryID, Color
 FROM Production.Product
 WHERE Color IS NOT NULL
+
+-- or
+
+SELECT DISTINCT ISNULL(ProductSubcategoryID,'') AS ProductSubcategoryID, ISNULL(Color,'Not Specified') as Color
+FROM Production.Product
