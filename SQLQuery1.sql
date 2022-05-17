@@ -51,7 +51,7 @@ WHERE Name LIKE '[AS]%'
 ORDER BY Name
 
 --11
-SELECT Name
+SELECT *
 FROM Production.Product
 WHERE Name LIKE 'SPO[^K]%'
 ORDER BY Name
