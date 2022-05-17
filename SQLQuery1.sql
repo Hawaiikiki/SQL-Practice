@@ -57,6 +57,6 @@ WHERE Name LIKE 'SPO[^K]%'
 ORDER BY Name
 
 --12
-SELECT DISTINCT ProductSubcategoryID, Color
+SELECT DISTINCT ISNULL(ProductSubcategoryID,'') AS ProductSubcategoryID, Color
 FROM Production.Product
-WHERE ProductSubcategoryID IS NOT NULL AND Color IS NOT NULL
+WHERE Color IS NOT NULL
