@@ -40,7 +40,7 @@ FROM Production.Product
 WHERE Color IN ('Black','Blue')
 
 --9
-SELECT Name
+SELECT *
 FROM Production.Product
 WHERE Name LIKE 'S%'
 
