@@ -31,25 +31,82 @@ FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY
 Hence, we must write WHERE clause before GROUP BY and HAVING clause after GROUP BY. Although they are both used as filters to select specific records from the table, they work differently. HAVING clause only applies to each group as a whole, while WHERE clause applys to individaul rows. Also, HAVING clause only filters an aggregate function and can only be used with SELECT statement. However, WHERE clause is used before aggregation and can be used with SELECT, UPDATE, and DELETE as well.
 
 6. Difference between RANK() and DenseRank() — value gap
-- RANK() and DenseRank() are both used as window function to get one extra column to the table. They both create a new column that ranks each record based on PARTITION BY, ORDER BY, 
+- RANK() and DenseRank() are both used as window function to get one extra column to the table. They both create a new column that ranks each row based on PARTITION BY, ORDER BY, and ROWS BETWEEN. However, when using RANK() if there is the same rank, there will be a gap for next rank. e.g. (11- 11- 13- 14). When using DENSE_RANK() if there is the same rank, there will not be a gap for next rank. e.g. (11- 11- 12- 13).
+
++ ROW_NUMBER() returns row number of sorted records starting with 1 with no nuplicate
+
++ syntax for ROWS BETWEEN: ROWS BETWEEN lower_bound AND upper_bound
 
 7. COUNT(*) vs. COUNT(colName)
+- COUNT(*) includes Null value and return the number of records. On the other hand, COUNT(colName) does not include Null values. So if we want to count number of orders or cities, we should use that specific column to avoid including Null values. 
 
-8. What's the difference between left join and inner join? JOIN and Subquery, which one has a
+8. What's the difference between left join and inner join? JOIN and Subquery, which one has a has better performance, why?
+- We can use Venn Diagram to visualize left join and inner join. Inner join (JOIN) uses intersection of two tables to join them together. However, Left Join uses all the records from left table and matching records from the right table. For non-matching records in the right table, the result set will return Null values. 
 
-better performance, why?
+- JOIN can only be used in FROM statement, while Subquery can be used in SELECT, WHERE, FROM, and ORDER BY statements. Although subqueries are often easier to understand and maintain, SQL server has an optimizer for JOIN. This causes JOIN to have better performance.
++ When we use GROUP BY multiple columns, Subquery can be more efficient than JOIN.
 
 9. What is correlated subquery
+- Correlated subquery is an inner query that is dependent on the outer query. When we use subquery in SELECT statement, we usually use correlated subquery.
+e.g. SELECT c.ContactName, (SELECT COUNT(o.OrderId) FROM Orders o WHERE o.CustomerId=c.CustomerId) As numOrders
+      FROM Customers c
+      // here, o.CustomerId = c.CustomerId is dependent on the outer query.
 
 10. What is a CTE, why do we need CTE?
-
+- CTE stands for Common Table Expression. CTE's life scope is one SELECT clause and is used increase readability of the query. Also, CTE can call itself again and again through Recursive CTE. When using recursive CTE, we only use UNION ALL.
+e.g. WITH empHierCTE
+      AS(
+      SELECT EmployeeId, FirstName, ReportsTo, 1 AS lvl
+      FROM Employees
+      WHERE ReportsTo IS NULL
+      UNION ALL
+      SELECT EmployeeId, FirstName, ReportsTo, cte.lvl + 1
+      FROM Employees e JOIN empHierCTE cte
+      ON e.ReportsTo = cte.Employeeid
+      )
+      
 11. What does SQL Profiler do?
+- SQL Server profiler is an interfacce to create and manage traces and analyze and replay trace results. Events are saved in a trace file that can later be analyzed or used ro replay a specific seris of steps when diagnosing a problem. (SQL Server Management Studio has SQL Profiler) It's under Tool bar in SSMS. 
 
 12. What is SQL injection, how to avoid SQL injection?
+- SQL Injection is a code injection technique that may destroy our database. It's a common web hacking technique that uses placement of malicious code in SQL statements via web page input. We can prevent SQL injection attacks by input validation and parametrized queries including prepared statements. Our application code should never use the input directly and the developer must sanitize all input.
+
+- Input validation: Make sure the input is the accepted type, length, format, and so on.
+- Parametrized queries/statements: Make sure that the parameters (e.g. inputs) passed into SQL statemetns are treated in a safe manner. So it is a means of pre-compiling a SQL statement so that all we have to supply are the parameters that need to be inserted into the statement for it to be executed.
 
 13. Difference between SP and user defined function? When to use SP when to use function?
+- There are several differences between SP and function. SP is used for DML (Data Manipulation Language) and function is used for calculations. We call SP by its name and we call function in SQL query. Also, SP may or may not have any output but function must return some value. Finally, SP can call function but Function cannot call SP.
+
+- SP: is a prepared SQL query that can be saved and reused over and over again. We should avoid creating SP that accepts parameters for table names and we may use SET NOCOUNT ON option to stop the message that shows the count of the number of rows affected by SP. It can be also used to prevent SQL injection.
+Syntax: CREATE PROC spName
+        AS
+        BEGIN
+        ~~QUERY~~
+        END
+        
+        EXEC spName
+
+- Function: returns values or tables defined by the function call. We cannot directly call the function like SP, so we need to write dbo.funcName(params).
+Syntax: CREATE FUNCTION funcName(@param1 paramType, @param2 paramType)
+        RETURNS returnType (e.g. money, int, TABLE)
+        AS
+        BEGIN
+        DECLARE variables (if necessary)
+        SET variables (if necessary)
+        RETRUN
+        ~~QUERY~~
+        END
+1) If returning a value,
+  SELECT dbo.funcName(someParams) AS someName
+  FROM [Order Details]
+
+2) If returning a table,
+  SELECT *
+  FROM dbo.funcName(someParams)
+
 
 14. Criteria of Union and Union all? Difference between UNION and UNION ALL
+- When we want to use UNION or UNION ALL, we need to consider two criteria. First is that the number of columns must be the same for each table. Second is that column types must be identical as well. Also, if we want to use Alias, we need to specify it in the first SELECT statement. Main difference between UNION and UNION ALL is that UNION removes all duplicate records while UNION ALL keeps them. Also, UNION sorts the result table based on first column ascendingly, but UNION ALL does not sort. As mentioned above, only UNION ALL can be used in recursive CTE.
 
 15. Steps you take to improve SQL Queries
 
