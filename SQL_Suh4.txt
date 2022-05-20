@@ -1,16 +1,37 @@
 Reviewing SQL Concepts
 
 1. What is index; types of indices; pros and cons
+- Index is a special lookup that the database serach engine can use to speed up data retrieval. Query optimizer depends on indexed columns to function.
+- There are two types of indices, Clustered index and Non-Clustered index.
+
+- Clustered index: Clustered index is used to physically sort the table, and there can be only one clustered index per table. Primary key of the table automatically genereates clustered index of the table.
+
+- Non-Clustered index: Non-Clustered index does not sort the table, but there can be multiple non-clustered indices per table. Foreign keys are usually good candidate for NC index because of JOIN. 
+
+- Pros: As mentioned above, index can help us improve retrieving speed and performance of query (SELECT).
+- Cons: When we use indices, SQL Server needs extra space to hold indices meaning that additional disk space is needed. Also, it can slow down other DML statements.
+
 
 2. What's the difference between Primary key and Unique constraint?
+- While a table can have only one primary key column, it can have multiple unique key. Also, primary key does not accept NULL values but unique key can accept NULL values (only one Null value for each column). Unique Key can be referenced by Foreign Key constraint, and primary key can be used as foreign key in other tables.
 
 3. Tell me about check constraint
+- By using check constraint, we can limit the values that can be placed in a column. Although other constraints also limit the values, check constraint can be used to limit the values more specifically. E.g. ADD CONSTRAINT chk_Age CHECK (Age BETWEEN 10 AND 90) --> only number(int) between 10 and 90 can be added to Age column.
 
 4. Difference between temp table and table variable
+- Although they are both stored in temp db, their life scope, size, usage, and structure vary. 
+Life Scope: Table variables are deleted when the batch or stored procedure ends. However, local and global temp tables are deleted when the connection/all connections that have referenced them have closed. Also, we use @ to declare table variable and use #/## to declare local/global temp tables. 
+Size: Microsoft recommends that we use table variable when we the data set is not too large (<100), otherwise temp tables.
+Usage: We do not use temp table in stored procedure or function, but we can use table variables in stored procedure or funciton
+Structure: We can create index/constraints (except foreign key) in temp tables, but we cannot create them in table variables.
 
 5. Difference between WHERE and HAVING
+- So we should first understand the execution order of the query.
+FROM/JOIN -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY
+Hence, we must write WHERE clause before GROUP BY and HAVING clause after GROUP BY. Although they are both used as filters to select specific records from the table, they work differently. HAVING clause only applies to each group as a whole, while WHERE clause applys to individaul rows. Also, HAVING clause only filters an aggregate function and can only be used with SELECT statement. However, WHERE clause is used before aggregation and can be used with SELECT, UPDATE, and DELETE as well.
 
 6. Difference between RANK() and DenseRank() — value gap
+- RANK() and DenseRank() are both used as window function to get one extra column to the table. They both create a new column that ranks each record based on PARTITION BY, ORDER BY, 
 
 7. COUNT(*) vs. COUNT(colName)
 
