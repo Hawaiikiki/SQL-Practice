@@ -109,8 +109,40 @@ Syntax: CREATE FUNCTION funcName(@param1 paramType, @param2 paramType)
 - When we want to use UNION or UNION ALL, we need to consider two criteria. First is that the number of columns must be the same for each table. Second is that column types must be identical as well. Also, if we want to use Alias, we need to specify it in the first SELECT statement. Main difference between UNION and UNION ALL is that UNION removes all duplicate records while UNION ALL keeps them. Also, UNION sorts the result table based on first column ascendingly, but UNION ALL does not sort. As mentioned above, only UNION ALL can be used in recursive CTE.
 
 15. Steps you take to improve SQL Queries
+- Improving SQL queries is important since managing the database requires much resource. 
+
+1) We should first look at the execution plan. It provides insight into query execution steps and processing efficiency. 
+2) We can also choose index for each table more wisely to optimize the query. If there is no clustered index, we should create one. And if we notice some columns are used often (e.g. for JOIN), then we should create non-clustered index using those columns. 
+3) By carefully analyzing the query, we may be able to avoid unnecessary joins and make sure we are using only the necessary tables. 
+4) SELECT * is often undesirable as well.
+5) As mentioned above, JOIN performs better than Subquery most of the time, so we should use JOIN when we can use it instead of subqueries. 
+6) We can use derived tables (subquery in FROM statement) to avoid using GROUP BY statement. 
+7) We should avoid using correlated subqueries to improve performance.
+8) We should also avoid using user-defined scalar function in the WHERE clause, since function will be called for every input row. But using it is less problematic in SELECT statement, since the data is already filtered through WHERE clause
+9) We can use CASE expressions to include varaible logic in a query. It can dynamically change column output on a row-by-row basis
+
++ User-defined scalar function returns a single data value of the type defined in the RETURNS clause
 
 16. concurrency problem in transaction
+- Concurrency problems occur when multiple transactions are trying to be executed at the same time or between delay of one transaction. There are number of concurrency problems.
+
+1) Dirty Reads
+- Occurs when one transaction updates an item and fails. But the updated item is used by another transaction before the item is changed or reverted back to its last value. So if T2 reads uncommitted data from T1 and T1 rolls back, then this problem occurs.
+- Caused by isolation level read uncommitted and can be solved by isolation level read committed (default isolation)
+
+2) Lost Update
+- Occurs when an update done to a data item by one transaction is lost as it is overwritten by the update done by another transaction. If T1 and T2 both read and update the same data but T2 finishes before T1, then T2 will lose its updates.
+- Caused by isolation level read commmitted and can be solved by isolation level repeatable read. Here, T2 is deadlocked until t1's transaction is done.
+
+3) Non Repeatable Read
+- Occurs when two or more read operations of the same transaction read different values of the same variable. So if T1 reads the same data twice while T2 is updating the data, this problem can occur.
+- Caused by isolation level read committed and can be solved by isolation level repeatable read. Again, T2 will be executed after T1 is finished
+
+4) Phantom Read
+- Occurs when a transaction reads a variable once but when it tries to read that same variable again, an error occurs saying that the variable does not exist.
+- Caused by isolation level repeatable read and can be solved by isolation level serializable.
+
+So in general, for e-commerce we can go with READ COMMITTED, but for banking where it requires consistent data we should use SERIALIZABLE
 
 17. what is deadlock, how to prevent
 
