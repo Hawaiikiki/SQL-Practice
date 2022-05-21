@@ -144,20 +144,83 @@ Syntax: CREATE FUNCTION funcName(@param1 paramType, @param2 paramType)
 
 So in general, for e-commerce we can go with READ COMMITTED, but for banking where it requires consistent data we should use SERIALIZABLE
 
+- Serializable is the highest isolation level and prevents all possible types of concurrency phenomena in SQL Server, but on the other hand, the serializable level decreases performance and increases the likelihood of deadlocks.
+- With Read Committed, transactions issue exclusive locks at the time of data modification, thus not allowing other transactions to read the modified data that is not yet committed.
+
 17. what is deadlock, how to prevent
+- deadlock is a situation in which two or more transactions are waiting for one another to give up locks. Under these circumstances, each process cannot continue and begins to wait for others to release the resource
+
+There are few ways to prevent deadlocks happening.
+1) Try to keep transactions short; this will avoid holding locks in a transaction for a long period of time.
+2) Access objects in a similar logical manner in multiple transactions. So, after the first transaction commits or rolls back, the second continues, and a deadlock does not occur.
+3) Create a covering index to reduce the possibility of a deadlock.
+4) Use lower level isolation
 
 18. what is normalization, 1NF - BCNF, benefits using normalization
+- We can use normalization to organize the data and reduce the data redundancy. By doing so, we can waste less disk space and improve consistency throughout the data.
+
+1NF: It's all about atomic values. For one cell, we want one value (e.g. (yellow, red, blue) in one cell under color column) and there should not be repeating groups in the table. (e.g. name1, name2, name3). Also each record should be unique
+
+2NF: 1NF + We care about partical dependency. If a column in a table is not dependent on the row itself but other column, we should divide the table into multiple tables to avoid partial dependency. (e.g. columns: customerId, storeId, storeLocation --> storeLocation depends on storeId --> divide it into two tables)
+
+3NF: 2NF + We care about transitive functional dependency. A transitive dependency is a functional dependency in which A --> C indirectly because A-->B B-->C, where B-->A is not the case. 3NF ensures reduction of data duplication and can achieve data integrity. (e.g. stuId,stuName,subId,subName --> stuId --> subId --> subName --> divide the talbe)
+
+BCNF: Also known as 3.5NF. 3NF + We care only when there are multiple overlapping candidate keys.
+(e.g. stuId, courseName, profName --> courseName depends on (stuId,profName) --> stuId,pId + pId,profName,courseName) here pId <-> profName.
+
+candidate keys: a specific type of field in a relational database that can identify each unique record independently of any other data.
 
 19. what are the system defined databases?
+There are five system defined databases: master, model, tempdb, msdb, and resource.
+
+Master: Catalog database that keeps info on all user defined databases. It contains all of the System level information for SQL Server.
+
+Model: Whenever we make a database, (right click + properties), we can change the size. When we change the model's properties, the settings change for the next database accordingly. "Alter database" is the command. We can think of it as a template for all the databases created on SQL Server.
+
+TempDb: It keeps temporary table and temporary stored procedures for usage in the query. Removes all tables after closing SQL
+
+MsDb: It is where server agent keeps its activities. It is used to schedule alerts, jobs, and to record operators.
+(server agent: allows the creation of "jobs" that help automate processes)
+
+MsSQL system resource: Predefined functionalities. Predefined stored procedures are held here. Exampled of a stored procedure stored is Sp_Help that gives us a table of object name, owner, and object type of everything in the database. It contains system defined objects.
 
 20. composite key
+- Composite key is a specific type of primary key that uses the contents of two or more fields(columns) from a table to create a unique value. Primary key should consist of one column if not composite key.
 
 21. candidate key
+- Candidate key is a specific type of field in a relational database that can identify each unique record independently of any other data. It can be a single key or a group of multiple keys. Multiple candidate keys (two or more) can take place in any relationship. The attributes in a candidate key may contain a NULL value that opposes the primary key in it. --> primary key is basically a type of candidate key.
 
 22. DDL vs. DML
+- DDL: Data Definition Language that is used to define data structure. It allows creation objects in database (e.g. CREATE, ALTER, DROP, RENAME)
+
+- DML: Data Manipulation Langauge that is used to manipulate data itself. It allows query and modify the data. (e.g. INSERT, UPDATE, MERGE, DELETE)
+
++ DCL: Data Control Language that allows us to determine who can see/modify the data (e.g. GRANT, DENY, REVOKE)
 
 23. ACID property
+- ACID refers to properties of transactions.
+
+- A: Atomicity: Work is atomic. Either all of the work is done or none is done. Entire transaction takes place at once or doesn't happen at all. 
+* Transaction Manager is reponsible for this property. (e.g. if debit is made successfully from one account, the correspoding credit is made to other account.)
+
+- C: Consistency: Whatever happens in the middle of the transactions, this property will never leave process if there's an error. The database must be consistent before and after the transaction.  (e.g. total value of funds in both debit/credit accounts is the same at the start & end of each transaction)
+* Application Manager is reponsible for this property.
+
+- I: Isolation: Two transactions will be isolated from each other by locking the resource. Any violation to this will cause concurrency problem. Multiple transactions occur independently without intereference. (e.g. another transaction sees the transferred funds in one account or the other, but not in both nor in neither)
+* Concurrency Control Manager is reponsible for this property.
+
+- D: Durability: Once the transaction is completed, the changes made to the db will be saved. The changes of a successful transaction occrus even if the system failure occurs. (e.g. ensures that the changes made to each account will not be reversed)
+* Recovery Manager is reponsible for this property.
 
 24. table scan vs. index scan
+- Table scan means iterate over all table rows. Index scan means iterate over all index items, when item index meets search condition, table row is retrived through index. Usualy index scan is less expensive than a table scan because index is more flat than a table. SQL Server optimizer can use index scan to optimize the process.
 
 25. Difference between Union and JOIN
+- While JOIN combines data into new columns, UNION combines data into new rows. JOIN combines data from multiple tables based on a matched condition between them (number of columns & data types selected may not be the same), but UNION combines the result-set of multiple SELECT statements (number of columns & data types selected must be the same). 
+
+Things to study more:
+
+Predefined Database
+Parametrized queries
+BCNF
+ACID
